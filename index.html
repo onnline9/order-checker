@@ -20,26 +20,39 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
         }
         input, button {
             display: block;
             width: 100%;
             margin-bottom: 10px;
             padding: 8px;
+            box-sizing: border-box;
         }
         button {
             background-color: #4CAF50;
             color: white;
             border: none;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
         button:hover {
             background-color: #45a049;
         }
-        #debug {
+        #result {
             margin-top: 20px;
-            border-top: 1px solid #ccc;
-            padding-top: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        #debug {
+            display: none;
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
             max-height: 200px;
             overflow-y: auto;
         }
@@ -56,18 +69,27 @@
     </div>
 
     <script>
+        let isDebugMode = false;
+
+        function toggleDebug() {
+            isDebugMode = !isDebugMode;
+            document.getElementById('debug').style.display = isDebugMode ? 'block' : 'none';
+        }
+
         function log(message) {
             console.log(message);
-            const debugDiv = document.getElementById('debug');
-            debugDiv.innerHTML += message + '<br>';
-            debugDiv.scrollTop = debugDiv.scrollHeight;
+            if (isDebugMode) {
+                const debugDiv = document.getElementById('debug');
+                debugDiv.innerHTML += message + '<br>';
+                debugDiv.scrollTop = debugDiv.scrollHeight;
+            }
         }
 
         function checkOrders() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const resultDiv = document.getElementById('result');
-            const csvUrl = 'https://docs.google.com/spreadsheets/d/1J-_dhBWzTRb0GzwE63dhwQ-SIPxW2LjsTU6_nfPTHbU/pub?gid=0&single=true&output=csv'; // עדכן לקישור הנכון שלך
+            const csvUrl = 'https://docs.google.com/spreadsheets/d/1J-_dhBWzTRb0GzwE63dhwQ-SIPxW2LjsTU6_nfPTHbU/pub?output=csv'; // עדכן לקישור הנכון שלך
             
             log(`בודק עבור אימייל: ${email}`);
             resultDiv.textContent = "טוען נתונים...";
@@ -114,6 +136,9 @@
                 }
             });
         }
+
+        // הוסף מאזין לחיצה כפולה להפעלת/כיבוי מצב דיבוג
+        document.addEventListener('dblclick', toggleDebug);
     </script>
 </body>
 </html>
