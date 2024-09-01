@@ -53,27 +53,25 @@
             const password = document.getElementById('password').value;
             const resultDiv = document.getElementById('result');
             const csvUrl = 'https://docs.google.com/spreadsheets/d/1J-_dhBWzTRb0GzwE63dhwQ-SIPxW2LjsTU6_nfPTHbU/pub?gid=0&single=true&output=csv';
-            console.log("Checking for email:", email, "and password:", password);
+            
+            resultDiv.textContent = "טוען נתונים...";
+            
             Papa.parse(csvUrl, {
                 download: true,
                 header: true,
                 complete: function(results) {
-                    console.log("CSV data:", results.data);
-                    
                     if (results.data.length === 0) {
-                        console.error("No data found in CSV");
                         resultDiv.textContent = "אירעה שגיאה: אין נתונים בקובץ";
                         return;
                     }
-                    console.log("First row of data:", results.data[0]);
-                    const customer = results.data.find(row => {
-                        console.log("Comparing:", row.email, email, row.password, password);
-                        return row.email.trim() === email.trim() && row.password.trim() === password.trim();
-                    });
-                    console.log("Found customer:", customer);
+                    
+                    const customer = results.data.find(row => 
+                        row.email && row.email.trim().toLowerCase() === email.trim().toLowerCase() && 
+                        row.password && row.password.trim() === password.trim()
+                    );
                     
                     if (customer) {
-                        const orders = parseInt(customer.orders);
+                        const orders = parseInt(customer.orders) || 0;
                         let message = `מספר ההזמנות שלך: ${orders}`;
                         if (orders >= 20) {
                             message += "<br>זכית בשובר מתנה בשווי 400 ש\"ח!";
