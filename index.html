@@ -40,6 +40,8 @@
             margin-top: 20px;
             border-top: 1px solid #ccc;
             padding-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
         }
     </style>
 </head>
@@ -56,39 +58,41 @@
     <script>
         function log(message) {
             console.log(message);
-            document.getElementById('debug').innerHTML += message + '<br>';
+            const debugDiv = document.getElementById('debug');
+            debugDiv.innerHTML += message + '<br>';
+            debugDiv.scrollTop = debugDiv.scrollHeight;
         }
 
         function checkOrders() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const resultDiv = document.getElementById('result');
-            const csvUrl = 'https://docs.google.com/spreadsheets/d/1J-_dhBWzTRb0GzwE63dhwQ-SIPxW2LjsTU6_nfPTHbU/pub?gid=0&single=true&output=csv';
+            const csvUrl = 'https://docs.google.com/spreadsheets/d/YOUR_SPREADSHEET_ID/pub?output=csv'; // עדכן לקישור הנכון שלך
             
-            log(`Checking for email: ${email}`);
+            log(`בודק עבור אימייל: ${email}`);
             resultDiv.textContent = "טוען נתונים...";
             
             Papa.parse(csvUrl, {
                 download: true,
                 header: true,
                 complete: function(results) {
-                    log(`Parsed CSV data. Row count: ${results.data.length}`);
+                    log(`נתוני CSV נקראו. מספר שורות: ${results.data.length}`);
                     if (results.data.length === 0) {
                         resultDiv.textContent = "אירעה שגיאה: אין נתונים בקובץ";
                         return;
                     }
                     
-                    log(`First row of data: ${JSON.stringify(results.data[0])}`);
+                    log(`שורה ראשונה של נתונים: ${JSON.stringify(results.data[0])}`);
                     
                     const customer = results.data.find(row => {
-                        log(`Comparing: ${row.email} with ${email}, ${row.password} with ${password}`);
-                        return row.email && row.email.trim().toLowerCase() === email.trim().toLowerCase() && 
-                               row.password && row.password.trim() === password.trim();
+                        log(`משווה: אימייל - ${row['כתובת אימייל']} עם ${email}, סיסמה - ${row['סיסמה']} עם ${password}`);
+                        return row['כתובת אימייל'] && row['כתובת אימייל'].trim().toLowerCase() === email.trim().toLowerCase() && 
+                               row['סיסמה'] && row['סיסמה'].trim() === password.trim();
                     });
                     
                     if (customer) {
-                        log(`Customer found: ${JSON.stringify(customer)}`);
-                        const orders = parseInt(customer.orders) || 0;
+                        log(`לקוח נמצא: ${JSON.stringify(customer)}`);
+                        const orders = parseInt(customer['מספר הזמנות']) || 0;
                         let message = `מספר ההזמנות שלך: ${orders}`;
                         if (orders >= 20) {
                             message += "<br>זכית בשובר מתנה בשווי 400 ש\"ח!";
@@ -99,13 +103,13 @@
                         }
                         resultDiv.innerHTML = message;
                     } else {
-                        log('Customer not found');
+                        log('לקוח לא נמצא');
                         resultDiv.textContent = "אימייל או סיסמה שגויים";
                     }
                 },
                 error: function(error) {
-                    console.error('Error:', error);
-                    log(`Error parsing CSV: ${error}`);
+                    console.error('שגיאה:', error);
+                    log(`שגיאה בקריאת CSV: ${error}`);
                     resultDiv.textContent = "אירעה שגיאה בטעינת הנתונים";
                 }
             });
