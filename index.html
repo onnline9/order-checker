@@ -104,16 +104,13 @@
                         return;
                     }
                     
-                    log(`שורה ראשונה של נתונים: ${JSON.stringify(results.data[0])}`);
-                    
-                    const customer = results.data.find(row => {
-                        log(`משווה: אימייל - ${row['כתובת אימייל']} עם ${email}, סיסמה - ${row['סיסמה']} עם ${password}`);
-                        return row['כתובת אימייל'] && row['כתובת אימייל'].trim().toLowerCase() === email.trim().toLowerCase() && 
-                               row['סיסמה'] && row['סיסמה'].trim() === password.trim();
-                    });
+                    const customer = results.data.find(row => 
+                        row['כתובת אימייל'] && row['כתובת אימייל'].trim().toLowerCase() === email.trim().toLowerCase() && 
+                        row['סיסמה'] && row['סיסמה'].trim() === password.trim()
+                    );
                     
                     if (customer) {
-                        log(`לקוח נמצא: ${JSON.stringify(customer)}`);
+                        log('לקוח נמצא');
                         const orders = parseInt(customer['מספר הזמנות']) || 0;
                         let message = `מספר ההזמנות שלך: ${orders}`;
                         if (orders >= 20) {
@@ -131,13 +128,12 @@
                 },
                 error: function(error) {
                     console.error('שגיאה:', error);
-                    log(`שגיאה בקריאת CSV: ${error}`);
+                    log(`שגיאה בקריאת CSV: ${error.message}`);
                     resultDiv.textContent = "אירעה שגיאה בטעינת הנתונים";
                 }
             });
         }
 
-        // הוסף מאזין לחיצה כפולה להפעלת/כיבוי מצב דיבוג
         document.addEventListener('dblclick', toggleDebug);
     </script>
 </body>
