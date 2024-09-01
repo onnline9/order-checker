@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>בדיקת מצב הזמנות</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -59,64 +57,42 @@
     </div>
 
     <script>
-        let loginAttempts = 0;
-        const maxAttempts = 5;
-        const authToken = Math.random().toString(36).substring(7);
-
-        function simpleHash(str) {
-            return CryptoJS.SHA256(str).toString();
-        }
-
-        function checkOrders() {
-            if (loginAttempts >= maxAttempts) {
-                document.getElementById('result').textContent = "נחסמת עקב ניסיונות כניסה רבים. נסה שוב מאוחר יותר.";
-                return;
-            }
-
+        async function checkOrders() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const resultDiv = document.getElementById('result');
-            const csvUrl = 'https://docs.google.com/spreadsheets/d/1J-_dhBWzTRb0GzwE63dhwQ-SIPxW2LjsTU6_nfPTHbU/pub?output=csv'; // עדכן לקישור הנכון שלך
             
             resultDiv.textContent = "טוען נתונים...";
             
-            Papa.parse(csvUrl, {
-                download: true,
-                header: true,
-                complete: function(results) {
-                    if (results.data.length === 0) {
-                        resultDiv.textContent = "אירעה שגיאה: אין נתונים בקובץ";
-                        return;
-                    }
-                    
-                    const hashedPassword = simpleHash(password + authToken);
-                    const customer = results.data.find(row => 
-                        row['כתובת אימייל'] && row['כתובת אימייל'].trim().toLowerCase() === email.trim().toLowerCase() && 
-                        row['סיסמה'] && simpleHash(row['סיסמה'].trim() + authToken) === hashedPassword
-                    );
-                    
-                    if (customer) {
-                        loginAttempts = 0;
-                        const orders = parseInt(customer['מספר הזמנות']) || 0;
-                        let message = `מספר ההזמנות שלך: ${orders}`;
-                        if (orders >= 20) {
-                            message += "<br>זכית בשובר מתנה בשווי 400 ש\"ח!";
-                        } else if (orders >= 10) {
-                            message += "<br>זכית בשובר מתנה בשווי 150 ש\"ח!";
-                        } else if (orders >= 5) {
-                            message += "<br>זכית בשובר מתנה בשווי 50 ש\"ח!";
-                        }
-                        resultDiv.innerHTML = message;
-                    } else {
-                        loginAttempts++;
-                        resultDiv.textContent = `אימייל או סיסמה שגויים. נותרו ${maxAttempts - loginAttempts} ניסיונות.`;
-                    }
-                },
-                error: function(error) {
-                    console.error('שגיאה:', error);
-                    resultDiv.textContent = "אירעה שגיאה בטעינת הנתונים";
+            const scriptUrl = 'https://script.google.com/a/macros/cityride.co.il/s/AKfycbwIc6pm4GmTmTBshCgYnuS5GBF7WU2gsPxI8ArVamxsF2GCMLZVo6NcKgTNW4OZtq4w/exec';  // החלף זאת עם ה-URL שקיבלת
+            
+            try {
+                const response = await fetch(scriptUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                // מכיוון שאנחנו משתמשים ב-'no-cors', לא נוכל לקרוא את התגובה ישירות
+                // נחכה מעט ואז נבצע בקשה נוספת לקבלת התוצאה
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const resultResponse = await fetch(scriptUrl + '?email=' + encodeURIComponent(email));
+                const resultText = await resultResponse.text();
+                const data = JSON.parse(resultText);
+                
+                if (data.success) {
+                    resultDiv.textContent = data.message;
+                } else {
+                    resultDiv.textContent = data.message || "אירעה שגיאה";
                 }
-            });
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.textContent = "אירעה שגיאה בטעינת הנתונים";
+            }
         }
     </script>
 </body>
