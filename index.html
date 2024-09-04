@@ -5,14 +5,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>בדיקת מצב הזמנות</title>
     <style>
-        /* ... (השאר את ה-CSS כפי שהוא) ... */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        input, button {
+            display: block;
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 12px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background-color: #f9f9f9;
+            font-size: 16px;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>בדיקת מצב הזמנות</h1>
-        <input type="email" id="email" placeholder="כתובת אימייל">
-        <input type="password" id="password" placeholder="סיסמה">
+        <input type="email" id="email" placeholder="כתובת אימייל" required>
+        <input type="password" id="password" placeholder="סיסמה" required>
         <button onclick="checkOrders()">בדוק הזמנות</button>
         <div id="result"></div>
     </div>
@@ -22,6 +83,11 @@
             const password = document.getElementById('password').value;
             const resultDiv = document.getElementById('result');
             
+            if (!email || !password) {
+                resultDiv.textContent = "נא למלא את כל השדות";
+                return;
+            }
+
             resultDiv.textContent = "טוען נתונים...";
             
             const scriptUrl = 'https://script.google.com/macros/s/AKfycbwKJcqKqCCIAtG4n-fDu_FpQw4S2kCNqPl-X_V-r12IefXjYrwBKLgrvOC3LD3ZJcev/exec';
@@ -36,7 +102,6 @@
                     body: JSON.stringify({ email, password })
                 });
                 
-                // מכיוון שאנחנו משתמשים ב-'no-cors', נחכה מעט ואז נבצע בקשה נוספת לקבלת התוצאה
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 
                 const resultResponse = await fetch(scriptUrl + '?email=' + encodeURIComponent(email));
